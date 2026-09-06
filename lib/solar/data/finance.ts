@@ -1,38 +1,3 @@
-/**
- * ============================================================================
- * VERIFIED against lender publications — 2026-09-07.
- * ============================================================================
- * Unlike the other files in this directory, these figures are not placeholders.
- * Each was read from the bank's own published scheme page.
- *
- * THE RULE THIS FILE FOLLOWS: a rate appears here only if the document it came
- * from is INDEXED in the knowledge base. The proposal PDF prints these figures
- * while the assistant answers from the index, so a rate the assistant cannot
- * cite must not appear in a document carrying the company's name.
- *
- * Indexed, and therefore usable:
- *   SBI-PM-Surya-Ghar-Rooftop-Solar-Loan   EBLR-2.15% (5.75%) / EBLR+0% (7.90%)
- *   Canara-Rooftop-Solar-CRTS-PMSGY        Rs 2 lakh cap, 10% margin, 10 yr,
- *                                          no interest rate published
- *
- * Read but NOT indexed, so deliberately excluded — restore the figures here only
- * when the corresponding document is ingested:
- *   Union Bank URTS          EBLR-2.25% (5.75%) / EBLR+1.00-1.50% (9.00-9.50%)
- *   Bank of Baroda Composite from 5.75%, up to 90% financed
- *   Bank of Maharashtra      eligibility and spreads
- *   PNB                      eligibility only
- *
- * CAVEAT: these are floating rates expressed against SBI's external benchmark
- * lending rate. EBLR was 8.00% at the time of reading; when the RBI repo rate
- * moves, every effective percentage here moves with it. Re-read the lender
- * pages before relying on the figures.
- *
- * IMPORTANT — this is information, not advice. Sunny may state these published
- * terms. It must never recommend a lender, assess anyone's eligibility, or
- * advise anyone to borrow. That rule lives in SOLAR_GUARDRAILS_PROMPT.
- * ============================================================================
- */
-
 export const FINANCE_LAST_VERIFIED = "2026-09-07";
 /** The benchmark the published rates are expressed against, as read. */
 export const EBLR_AS_READ_PCT = 8.0;

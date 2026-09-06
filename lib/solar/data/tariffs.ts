@@ -1,22 +1,3 @@
-/**
- * ============================================================================
- * PLACEHOLDER DATA — NOT VERIFIED. DO NOT USE FOR REAL CUSTOMER QUOTES.
- * ============================================================================
- * Residential (LT domestic) slab tariffs, approximated.
- *
- * Real DISCOM bills are built from an energy charge, a fixed charge, wheeling,
- * a fuel adjustment component, electricity duty and tax. This model collapses
- * everything that is not the energy charge or the fixed charge into a single
- * `otherChargesFactor` multiplier applied to the energy charge. That is a
- * simplification, and it is the single largest source of error in the savings
- * estimate.
- *
- * Before going live: replace each slab table from the current DISCOM tariff
- * order, and re-derive otherChargesFactor by dividing a real bill's total by
- * its energy charge.
- * ============================================================================
- */
-
 import type { ServiceStateCode } from "../types";
 
 export const TARIFFS_LAST_VERIFIED = "not verified";

@@ -16,6 +16,8 @@ import {
   MAX_MESSAGE_TEXT_LENGTH,
   MAX_OUTPUT_TOKENS,
   COMPACTION_MAX_SUMMARY_CHARS,
+  ENABLE_SUGGESTED_PROMPTS,
+  ENABLE_DYNAMIC_SUGGESTIONS,
 } from "@/config";
 import { signSummary, verifySummary } from "@/lib/summary-signature";
 import { getModel } from "@/lib/ai/model-registry";
@@ -25,6 +27,7 @@ import {
   buildProviderOptions,
 } from "@/lib/ai/routing";
 import { buildToolSet, buildToolGuidance } from "@/lib/ai/tools";
+import { generateSuggestions, type SolarContext } from "@/lib/ai/suggestions";
 import { compactMessages } from "@/lib/compaction";
 import {
   normUrl,
@@ -39,9 +42,11 @@ import {
   PACKAGES_PART,
   PROPOSAL_PART,
   SIZING_PART,
+  SUGGESTIONS_PART,
   type CollectArtifact,
   type SolarArtifact,
 } from "@/lib/solar/artifacts";
+import type { MatchedPackage, ProposalInput, SizingResult } from "@/lib/solar/types";
 
 // Next.js requires segment config to be a static literal (not imported).
 // Keep in sync with VERCEL_MAX_DURATION in config.ts. 60s is the Vercel Hobby cap.
@@ -169,6 +174,14 @@ export async function POST(req: Request) {
   // titles instead of falling back to a bare hostname. Client-supplied, so
   // each entry is schema-validated before use.
   const priorSourcesByUrl = new Map<string, UISource>();
+  // Latest prior-turn solar cards, recovered the same way, so suggestions
+  // generated later in this request stay grounded even on a turn that
+  // doesn't re-run the sizing/catalogue/proposal tools itself.
+  let priorSizing: SizingResult | undefined;
+  let priorPackages: MatchedPackage[] | undefined;
+  let priorProposal:
+    | { ready: boolean; missing: string[]; payload: Partial<ProposalInput> }
+    | undefined;
   for (const msg of messages) {
     if (msg.role !== "assistant") continue;
     for (const part of msg.parts ?? []) {
@@ -180,6 +193,12 @@ export async function POST(req: Request) {
             priorSourcesByUrl.set(normUrl(parsed.data.url), parsed.data);
           }
         }
+      } else if (p.type === SIZING_PART && p.data) {
+        priorSizing = p.data as SizingResult;
+      } else if (p.type === PACKAGES_PART && p.data) {
+        priorPackages = p.data as MatchedPackage[];
+      } else if (p.type === PROPOSAL_PART && p.data) {
+        priorProposal = p.data as typeof priorProposal;
       }
     }
   }
@@ -246,7 +265,7 @@ export async function POST(req: Request) {
           stopWhen: stepCountIs(MAX_STEPS),
           maxOutputTokens: MAX_OUTPUT_TOKENS,
           providerOptions,
-          onFinish: ({ steps }) => {
+          onFinish: async ({ steps }) => {
             // The Sources box is the single reference list, built FROM the
             // text by the SAME canonicalization the client applies at render
             // time (lib/citations.ts): citations are renumbered sequentially
@@ -366,6 +385,49 @@ export async function POST(req: Request) {
                 id: "proposal",
                 data: { ready: proposal.ready, missing: proposal.missing, payload: proposal.payload },
               });
+            }
+
+            // Dynamic suggestions: grounded in this turn's cards where present,
+            // falling back to the latest prior-turn cards otherwise. Any
+            // failure here is swallowed by generateSuggestions itself — the
+            // strip just falls back to the static, stage-based table.
+            if (ENABLE_SUGGESTED_PROMPTS && ENABLE_DYNAMIC_SUGGESTIONS) {
+              const effectiveSizing = sizing?.result ?? priorSizing;
+              const effectivePackages = packages?.matches ?? priorPackages;
+              const effectiveProposal = proposal
+                ? { ready: proposal.ready, missing: proposal.missing, payload: proposal.payload }
+                : priorProposal;
+
+              const computedStage: SolarContext["computedStage"] = effectiveProposal?.ready
+                ? "proposed"
+                : effectivePackages?.length
+                  ? "matched"
+                  : effectiveSizing
+                    ? "sized"
+                    : "start";
+
+              const solarContext: SolarContext = {
+                computedStage,
+                state: effectiveSizing?.state,
+                discom: effectiveSizing?.discom,
+                monthlyUnits: effectiveSizing?.monthlyUnits,
+                recommendedSystemKw: effectiveSizing?.recommendedSystemKw,
+                tier: effectiveSizing?.tier,
+                netCostInr: effectiveSizing?.netCostInr,
+                matchedTiers: effectivePackages
+                  ? [...new Set(effectivePackages.map((m) => m.pkg.tier))]
+                  : undefined,
+                proposalReady: effectiveProposal?.ready,
+              };
+
+              const suggestions = await generateSuggestions({
+                userText: latestText,
+                assistantText: answerText,
+                solarContext,
+              });
+              if (suggestions && suggestions.length > 0) {
+                writer.write({ type: SUGGESTIONS_PART, id: "suggestions", data: suggestions });
+              }
             }
           },
         });
