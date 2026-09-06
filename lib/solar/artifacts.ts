@@ -26,6 +26,7 @@ export type CollectArtifact = (artifact: SolarArtifact) => void;
 export const SIZING_PART = "data-sizing";
 export const PACKAGES_PART = "data-packages";
 export const PROPOSAL_PART = "data-proposal";
+export const SUGGESTIONS_PART = "data-suggestions";
 
 /**
  * Keeps only the last artifact of each kind. A homeowner who revises their

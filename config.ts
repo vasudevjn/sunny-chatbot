@@ -25,11 +25,6 @@ export const AI_NAME = "Sunny"; // the assistant's name
 // --- Installer identity (the company Sunny represents) ---
 export const INSTALLER_NAME = "Waaree Energies";
 export const INSTALLER_TAGLINE = "Rooftop solar for homes in Gujarat and Maharashtra";
-// DEMO PLACEHOLDERS. Deliberately not Waaree's real phone and inbox: this is a
-// course build whose pricing in lib/solar/data/ is still unverified placeholder
-// data, and a generated proposal must not route a homeowner to a real sales
-// desk on the strength of an invented quote. Swap these only when the numbers
-// behind the quote are real.
 export const INSTALLER_PHONE = "+91 90000 00000";
 export const INSTALLER_EMAIL = "demo@example.invalid";
 export const INSTALLER_SITE = "https://www.waaree.com";
@@ -370,6 +365,12 @@ export const UPLOAD_IMAGE_QUALITY = 0.85;
 // journey; the stage is derived from the stored lead (lib/solar/lead-store.ts),
 // so the strip moves the conversation forward instead of repeating itself.
 export const ENABLE_SUGGESTED_PROMPTS = true;
+
+// Model-generated follow-ups layered on top of the static table below (see
+// lib/ai/suggestions.ts). Falls back to the static table when off, on
+// failure, or before the first assistant reply exists to ground them in.
+export const ENABLE_DYNAMIC_SUGGESTIONS =
+  process.env.ENABLE_DYNAMIC_SUGGESTIONS?.toLowerCase() !== "false";
 
 export type SuggestedPrompt = {
   /** Short text on the chip. */

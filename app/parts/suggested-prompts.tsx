@@ -49,24 +49,31 @@ function Chip({
 /**
  * The suggested prompts strip above the composer.
  *
- * Which chips show depends on how far the homeowner has got: before an
- * estimate they are offered ways to get one, afterwards the subsidy and
- * products, and once they have seen products, the proposal. The stage comes
- * from the stored lead, so the strip advances the conversation rather than
- * repeating what has already happened.
+ * Prefers model-generated chips grounded in the last reply (see
+ * lib/ai/suggestions.ts), when the caller has them. Otherwise falls back to
+ * a static table keyed by how far the homeowner has got: before an estimate
+ * they are offered ways to get one, afterwards the subsidy and products, and
+ * once they have seen products, the proposal. Either way the strip advances
+ * the conversation rather than repeating what has already happened.
  */
 export function SuggestedPrompts({
   stage,
+  dynamic,
   onSelect,
   disabled,
   compact = false,
 }: {
   stage: LeadStage;
+  /** Model-generated chips for the latest turn, when available. Falls back
+   * to the static, stage-based table when null/empty (feature off, the
+   * generation call failed, or no assistant reply exists yet). */
+  dynamic?: SuggestedPrompt[] | null;
   onSelect: (text: string) => void;
   disabled?: boolean;
   compact?: boolean;
 }) {
-  const prompts = SUGGESTED_PROMPTS[stage] ?? SUGGESTED_PROMPTS.start;
+  const prompts =
+    dynamic && dynamic.length > 0 ? dynamic : SUGGESTED_PROMPTS[stage] ?? SUGGESTED_PROMPTS.start;
   if (prompts.length === 0) return null;
 
   // After the conversation has started, the strip is a quiet single row rather

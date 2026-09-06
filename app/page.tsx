@@ -32,6 +32,7 @@ import { SunnyLockup } from "@/components/solar/brand";
 import { WelcomeHero } from "@/app/parts/welcome-hero";
 import { clearLead, loadLead, saveBillExtraction, saveContact, saveMatches, saveSizing } from "@/lib/solar/lead-store";
 import type { BillExtraction, Contact, MatchedPackage, SizingResult, SolarLead } from "@/lib/solar/types";
+import type { SuggestedPrompt } from "@/config";
 import { BillUploadButton, BillUploadStatus, type UploadState } from "@/components/solar/bill-upload";
 import { summariseBillForChat } from "@/lib/solar/bill";
 import {
@@ -63,6 +64,9 @@ export default function Chat() {
   const welcomeMessageShownRef = useRef<boolean>(false);
   // Where this homeowner has got to. Drives which suggested prompts show.
   const [lead, setLead] = useState<SolarLead>({ stage: "start", updatedAt: 0 });
+  // Model-generated chips for the latest turn, when available (falls back to
+  // the static, stage-based table in SuggestedPrompts when null/empty).
+  const [dynamicSuggestions, setDynamicSuggestions] = useState<SuggestedPrompt[] | null>(null);
   // Guards the lead store against a write on every re-render.
   const lastSavedSizingRef = useRef<string>("");
   const [uploadState, setUploadState] = useState<UploadState>({ status: "idle" });
@@ -133,6 +137,23 @@ export default function Chat() {
     },
   });
 
+  // The "✓ filename read" pill and the suggestion strip share one slot above
+  // the composer, so once the bill-triggered reply finishes streaming the
+  // pill has done its job — clear it automatically so suggestions return
+  // without the user having to dismiss it by hand.
+  const prevChatStatusRef = useRef(status);
+  useEffect(() => {
+    const prevStatus = prevChatStatusRef.current;
+    prevChatStatusRef.current = status;
+    if (
+      uploadState.status === "done" &&
+      status === "ready" &&
+      (prevStatus === "streaming" || prevStatus === "submitted")
+    ) {
+      setUploadState({ status: "idle" });
+    }
+  }, [status, uploadState.status]);
+
   // Mirror the latest estimate and product matches into the lead, so the
   // suggested prompts and the proposal form know where the conversation has got
   // to. The figures themselves stay owned by the server; this is a UI cache.
@@ -141,6 +162,7 @@ export default function Chat() {
 
     let latestSizing: SizingResult | undefined;
     let latestMatches: MatchedPackage[] | undefined;
+    let latestSuggestions: SuggestedPrompt[] | undefined;
     for (const message of messages) {
       for (const part of message.parts ?? []) {
         const p = part as { type?: string; data?: unknown };
@@ -148,9 +170,12 @@ export default function Chat() {
           latestSizing = p.data as SizingResult;
         } else if (p.type === "data-packages" && p.data) {
           latestMatches = p.data as MatchedPackage[];
+        } else if (p.type === "data-suggestions" && Array.isArray(p.data)) {
+          latestSuggestions = p.data as SuggestedPrompt[];
         }
       }
     }
+    if (latestSuggestions) setDynamicSuggestions(latestSuggestions);
 
     const signature = [
       latestSizing
@@ -276,6 +301,7 @@ export default function Chat() {
     const data = loadConversationData(id);
     setMessages(data.messages);
     setDurations(data.durations);
+    setDynamicSuggestions(null);
     welcomeMessageShownRef.current = true;
   }
 
@@ -286,6 +312,7 @@ export default function Chat() {
     welcomeMessageShownRef.current = false;
     clearLead(conv.id);
     setLead({ stage: "start", updatedAt: 0 });
+    setDynamicSuggestions(null);
     lastSavedSizingRef.current = "";
 
     const welcomeMessage: UIMessage = {
@@ -510,6 +537,7 @@ export default function Chat() {
               isClient && (
                 <SuggestedPrompts
                   stage={lead.stage}
+                  dynamic={dynamicSuggestions}
                   onSelect={sendPrompt}
                   disabled={status === "streaming" || status === "submitted"}
                   compact={messages.length > 1}

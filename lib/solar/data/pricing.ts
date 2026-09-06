@@ -1,16 +1,3 @@
-/**
- * ============================================================================
- * PLACEHOLDER DATA — NOT VERIFIED. DO NOT USE FOR REAL CUSTOMER QUOTES.
- * ============================================================================
- * Installed cost benchmarks in rupees per kW, before subsidy, for residential
- * rooftop systems. Larger systems cost less per kW because the fixed costs of
- * a site visit, structure design and net-metering paperwork are spread wider.
- *
- * Replace these with your own installed-cost data. They drive every price the
- * bot quotes.
- * ============================================================================
- */
-
 import type { ProductTier } from "../types";
 
 export const PRICING_LAST_VERIFIED = "not verified";

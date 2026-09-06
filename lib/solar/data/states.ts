@@ -1,16 +1,3 @@
-/**
- * ============================================================================
- * PLACEHOLDER DATA — NOT VERIFIED. DO NOT USE FOR REAL CUSTOMER QUOTES.
- * ============================================================================
- * Every figure here is a plausible industry estimate, not a sourced value.
- * Replace with figures confirmed against DISCOM tariff orders, MNRE benchmarks
- * and your own installation data before this bot talks to a real homeowner.
- *
- * All application logic reads from this file, so replacing a number here is a
- * data edit and never a code edit.
- * ============================================================================
- */
-
 import type { ServiceStateCode } from "../types";
 
 export const LAST_VERIFIED = "not verified";

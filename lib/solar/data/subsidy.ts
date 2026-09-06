@@ -1,16 +1,3 @@
-/**
- * ============================================================================
- * PM Surya Ghar Muft Bijli Yojana — central financial assistance (CFA).
- * ============================================================================
- * The central slab structure below is the widely published one for residential
- * rooftop under the scheme. VERIFY against the current scheme guidelines on
- * pmsuryaghar.gov.in before relying on it — slabs and caps can be revised.
- *
- * State top-ups are set to zero because they could not be verified. If your
- * state runs a top-up, add it here rather than anywhere in the calculation.
- * ============================================================================
- */
-
 import type { ServiceStateCode } from "../types";
 
 export const SUBSIDY_LAST_VERIFIED = "not verified";
