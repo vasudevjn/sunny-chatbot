@@ -1,4 +1,30 @@
-# myAI6
+# Sunny - A rooftop solar assistant for Waaree Energies
+
+| | |
+|---|---|
+| **Team** | B - G 10 |
+| **Members** | Agrima Jaiswal, Aliya Rajpal, Riya George, Vasudev Jayachandran |
+| **Live assistant** | https://sunny-chatbot-chi.vercel.app/ |
+| **Documentation** | [DOCUMENTATION.md](./DOCUMENTATION.md) |
+
+**Sunny** helps homeowners in Gujarat and Maharashtra decide whether rooftop solar is worth it.
+It explains how solar and the PM Surya Ghar subsidy work, reads a photographed electricity bill,
+computes a savings estimate from the household's own consumption, recommends a system from
+Waaree's range, sets out published financing terms, and produces a draft proposal PDF, after
+which a representative gets in touch.
+
+Every rupee and kilowatt it states is computed in deterministic TypeScript
+(`lib/solar/sizing.ts`), never by the language model. Explanatory answers are grounded in
+official MNRE, GERC, MSEDCL and lender documents and are cited. See
+[DOCUMENTATION.md](./DOCUMENTATION.md) for the product case, the features built on top of the
+template, and the technical documentation.
+
+Built on **[myAI6](https://github.com/dringel/myAI6)** by Daniel M. Ringel (MIT licence). The
+template documentation follows below and remains accurate for setup and configuration.
+
+---
+
+## Template documentation (myAI6)
 
 **A modular RAG chatbot built with Next.js 16, Vercel AI SDK v6, and Pinecone.**
 
@@ -531,8 +557,13 @@ myAI6/
 ├── types/
 │   └── data.ts                            # Chunk/Source TypeScript schemas
 ├── public/
-│   ├── logo.png                           # App logo
-│   └── thinking.png                       # Thinking indicator icon (separate from logo)
+│   └── brand/                             # Sunny and Waaree brand assets
+│       ├── sunny-mark.png                 # Sun character: header, avatar, hero
+│       ├── sunny-wordmark.png             # "Sunny" wordmark (light theme)
+│       ├── sunny-wordmark-dark.png        # Light-green variant for dark theme
+│       ├── sunny-icon-180.png             # Touch icon
+│       ├── sunny-thinking.png             # Thinking indicator icon
+│       └── waaree_logo.png                # Installer logo, used on the proposal PDF
 ├── RAGloader/
 │   ├── RAG_loader_pipeline.ipynb          # ⭐ Python notebook: ingest content into the Pinecone knowledge base
 │   └── myAI5_RAG.py                       # Pipeline classes and functions imported by the notebook
