@@ -1,61 +1,60 @@
 /**
- * Fun rotating status labels for different processing phases.
- * Each category maps to a phase of the AI pipeline.
+ * Rotating status labels for different processing phases.
+ * Each category maps to a phase of the assistant's pipeline.
+ *
+ * Kept plain and literal: a homeowner deciding on a large purchase reads
+ * playful status text as evasive, so these say what is actually happening.
  */
 
 export const FUN_LABELS = {
   thinking: [
-    "Deliberating",
     "Thinking",
-    "Ringeling",
-    "Pondering",
-    "Brainstorming",
-    "Contemplating",
-    "Reasoning",
+    "Working it out",
+    "Considering",
+    "Looking at this",
   ],
   processing: [
-    "Distilling",
-    "Synthesizing",
-    "Aggregating",
-    "Ringlating",
-    "Extrapolating",
-    "Understanding",
-    "Scrutinizing",
-    "Triangulating",
-    "Correlating",
-    "Transforming",
-    "Extracting",
-    "Filtering",
+    "Going through the details",
+    "Putting this together",
+    "Working through it",
+    "Making sense of this",
   ],
   knowledgeBase: [
-    "Retrieving",
-    "Querying",
-    "Accessing",
-    "Fetching ",
+    "Checking the details",
+    "Looking this up",
+    "Checking the scheme rules",
+    "Finding the specifics",
   ],
   webSearch: [
-    "Searching",
-    "Investigating",
-    "Crawling",
-    "Browsing",
-    "Collecting",
+    "Checking for updates",
+    "Looking online",
+    "Checking the latest",
+  ],
+  calculating: [
+    "Working out your numbers",
+    "Sizing the system",
+    "Calculating savings",
+    "Running the figures",
+  ],
+  matching: [
+    "Matching systems to your roof",
+    "Comparing options",
+    "Finding the right fit",
+  ],
+  proposal: [
+    "Preparing your proposal",
+    "Pulling the details together",
+    "Drafting the document",
   ],
   assembling: [
-    "Composing",
-    "Constructing",
-    "Organizing",
-    "Ringelizing",
-    "Synthesizing",
-    "Integrating",
-    "Structuring",
-    "Formulating",
-    "Finalizing:",
+    "Writing this up",
+    "Putting the answer together",
+    "Finishing up",
   ],
   compacting: [
-    "Archiving previous discussion",
-    "Summarizing conversation",
-    "Reflecting on our discussion",
-    "Extracting key insights from conversation",
+    "Making a note of our conversation so far",
+    "Summarising what we have covered",
+    "Keeping track of the details",
   ],
 } as const;
 
@@ -78,63 +77,37 @@ export function pickRandom(
  * Maps the in-progress label to a suitable past-tense version.
  */
 export const PAST_TENSE: Record<FunLabelCategory, string[]> = {
-  thinking: [
-    "Deliberated",
-    "Thought",
-    "Ringeld",
-    "Pondered",
-    "Brainstormed",
-    "Contemplated",
-    "Reasoned",
-  ],
+  thinking: ["Thought about it", "Worked it out", "Considered it"],
   processing: [
-    "Distilled information",
-    "Synthesized knowledge",
-    "Aggregated data",
-    "Ringelated",
-    "Connected concepts",
-    "Extrapolated findings",
-    "Understood the bigger picture",
-    "Scrutinized the information",
-    "Triangulated results",
-    "Correlated findings",
-    "Transformed data",
-    "Extracted insights",
-    "Filtered information"
-
+    "Went through the details",
+    "Put it together",
+    "Worked through it",
   ],
   knowledgeBase: [
-    "Retrieved knowledge",
-    "Queried archives",
-    "Accessed knowledge",
-    "Searched archives",
-    "Fetched documents",
-    "Searched memory",
-    "Retrieved insights",
+    "Checked the details",
+    "Looked it up",
+    "Checked the scheme rules",
   ],
-  webSearch: [
-    "Searched the web",
-    "Investigated online",
-    "Crawled websites",
-    "Browsed the internet",
-    "Collected contemporary data",
+  webSearch: ["Checked for updates", "Looked online", "Checked the latest"],
+  calculating: [
+    "Worked out your numbers",
+    "Sized the system",
+    "Calculated the savings",
   ],
-  assembling: [
-    "Composed an answer",
-    "Constructed a response",
-    "Organize thoughts",
-    "Ringelized insights",
-    "Synthesized all information",
-    "Integrated insights",
-    "Structured a response",
-    "Formulated an answer",
-    "Finalized your answer",
+  matching: [
+    "Matched systems to your roof",
+    "Compared the options",
+    "Found the right fit",
   ],
+  proposal: [
+    "Prepared your proposal",
+    "Pulled the details together",
+    "Drafted the document",
+  ],
+  assembling: ["Wrote it up", "Put the answer together", "Finished up"],
   compacting: [
-    "Archived conversation",
-    "Summarized discussion",
-    "Extracted key insights from conversation",
-    "Reflected on discussion",
+    "Made a note of our conversation",
+    "Summarised what we have covered",
   ],
 };
 

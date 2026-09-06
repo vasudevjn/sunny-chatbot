@@ -34,10 +34,18 @@ import {
   claimSupported,
 } from "@/lib/citations";
 import { uiSourceSchema, type UISource } from "@/types/data";
+import {
+  latestByKind,
+  PACKAGES_PART,
+  PROPOSAL_PART,
+  SIZING_PART,
+  type CollectArtifact,
+  type SolarArtifact,
+} from "@/lib/solar/artifacts";
 
 // Next.js requires segment config to be a static literal (not imported).
-// Keep in sync with VERCEL_MAX_DURATION in config.ts and Vercel Pro plan settings.
-export const maxDuration = 120;
+// Keep in sync with VERCEL_MAX_DURATION in config.ts. 60s is the Vercel Hobby cap.
+export const maxDuration = 60;
 
 function jsonError(message: string, status: number) {
   return Response.json({ error: message }, { status });
@@ -176,8 +184,16 @@ export async function POST(req: Request) {
     }
   }
 
+  // Structured results from the solar tools. Same request-scoped collector
+  // pattern as the sources above: a tool cannot reach the stream writer, so it
+  // pushes here and onFinish emits typed data parts the UI renders as cards.
+  const solarArtifacts: SolarArtifact[] = [];
+  const collectArtifact: CollectArtifact = (artifact) => {
+    solarArtifacts.push(artifact);
+  };
+
   const model = getModel(vendor, modelId);
-  const tools = buildToolSet(collectSource);
+  const tools = buildToolSet(collectSource, collectArtifact);
   const toolGuidance = buildToolGuidance();
   const providerOptions = buildProviderOptions(vendor, mode, thinkingLevel, modelId);
 
@@ -331,6 +347,24 @@ export async function POST(req: Request) {
                 type: "data-sources",
                 id: "sources",
                 data: citedSources,
+              });
+            }
+
+            // Solar cards. Only the latest of each kind is emitted: a homeowner
+            // who revises their bill mid-turn gets one current estimate, not a
+            // stack of superseded ones.
+            const { sizing, packages, proposal } = latestByKind(solarArtifacts);
+            if (sizing) {
+              writer.write({ type: SIZING_PART, id: "sizing", data: sizing.result });
+            }
+            if (packages) {
+              writer.write({ type: PACKAGES_PART, id: "packages", data: packages.matches });
+            }
+            if (proposal) {
+              writer.write({
+                type: PROPOSAL_PART,
+                id: "proposal",
+                data: { ready: proposal.ready, missing: proposal.missing, payload: proposal.payload },
               });
             }
           },

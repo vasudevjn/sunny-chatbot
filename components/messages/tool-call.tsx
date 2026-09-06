@@ -1,7 +1,7 @@
 "use client";
 
 import { ToolCallPart, ToolResultPart } from "ai";
-import { BookOpen, Globe, Search, Wrench } from "lucide-react";
+import { BookOpen, FileText, Globe, PanelTop, Sun, Wrench } from "lucide-react";
 import { Shimmer } from "../ai-elements/shimmer";
 import { useRotatingLabel } from "@/hooks/use-rotating-label";
 import { pickRandomPastTense, type FunLabelCategory } from "@/lib/fun-labels";
@@ -47,6 +47,24 @@ const TOOL_CONFIG: Record<string, ToolDisplayConfig> = {
     resultCategory: "webSearch",
     call_icon: <Globe className="w-4 h-4" />,
     result_icon: <Globe className="w-4 h-4" />,
+  },
+  estimateSolarSystem: {
+    callCategory: "calculating",
+    resultCategory: "calculating",
+    call_icon: <Sun className="w-4 h-4" />,
+    result_icon: <Sun className="w-4 h-4" />,
+  },
+  matchSolarProducts: {
+    callCategory: "matching",
+    resultCategory: "matching",
+    call_icon: <PanelTop className="w-4 h-4" />,
+    result_icon: <PanelTop className="w-4 h-4" />,
+  },
+  prepareProposal: {
+    callCategory: "proposal",
+    resultCategory: "proposal",
+    call_icon: <FileText className="w-4 h-4" />,
+    result_icon: <FileText className="w-4 h-4" />,
   },
 };
 

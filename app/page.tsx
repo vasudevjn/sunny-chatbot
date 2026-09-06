@@ -23,10 +23,17 @@ import { MessageWall } from "@/components/messages/message-wall";
 import { ChatHeader, ChatHeaderBlock } from "@/app/parts/chat-header";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState, useRef, useCallback } from "react";
-import { AI_NAME, CLEAR_CHAT_TEXT, OWNER_NAME, WELCOME_MESSAGE, COMPACTION_ENABLED, COMPACTION_TOKEN_THRESHOLD, COMPACTION_SHOW_CONTEXT_MEMORY, MAX_MESSAGE_TEXT_LENGTH } from "@/config";
+import { AI_NAME, CLEAR_CHAT_TEXT, OWNER_NAME, WELCOME_MESSAGE, COMPACTION_ENABLED, COMPACTION_TOKEN_THRESHOLD, COMPACTION_SHOW_CONTEXT_MEMORY, MAX_MESSAGE_TEXT_LENGTH, ENABLE_SUGGESTED_PROMPTS, ENABLE_BILL_UPLOAD } from "@/config";
 import Image from "next/image";
 import Link from "next/link";
 import { ConversationSidebar } from "@/components/conversation-sidebar";
+import { SuggestedPrompts } from "@/app/parts/suggested-prompts";
+import { SunnyLockup } from "@/components/solar/brand";
+import { WelcomeHero } from "@/app/parts/welcome-hero";
+import { clearLead, loadLead, saveBillExtraction, saveContact, saveMatches, saveSizing } from "@/lib/solar/lead-store";
+import type { BillExtraction, Contact, MatchedPackage, SizingResult, SolarLead } from "@/lib/solar/types";
+import { BillUploadButton, BillUploadStatus, type UploadState } from "@/components/solar/bill-upload";
+import { summariseBillForChat } from "@/lib/solar/bill";
 import {
   createConversation,
   loadConversationData,
@@ -54,6 +61,11 @@ export default function Chat() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showContextMemory, setShowContextMemory] = useState(false);
   const welcomeMessageShownRef = useRef<boolean>(false);
+  // Where this homeowner has got to. Drives which suggested prompts show.
+  const [lead, setLead] = useState<SolarLead>({ stage: "start", updatedAt: 0 });
+  // Guards the lead store against a write on every re-render.
+  const lastSavedSizingRef = useRef<string>("");
+  const [uploadState, setUploadState] = useState<UploadState>({ status: "idle" });
 
   // Compaction state: stored summary persists across requests
   const summaryRef = useRef<{ summary: string; summarizedUpTo: number; signature: string } | null>(null);
@@ -64,11 +76,13 @@ export default function Chat() {
     activeConvIdRef.current = activeConvId;
   }, [activeConvId]);
 
-  // Load stored summary when conversation changes
+  // Load stored summary and lead when conversation changes
   useEffect(() => {
     if (isClient && activeConvId) {
       const stored = loadCompactedSummary(activeConvId);
       summaryRef.current = stored;
+      setLead(loadLead(activeConvId));
+      lastSavedSizingRef.current = "";
     }
   }, [isClient, activeConvId]);
 
@@ -118,6 +132,45 @@ export default function Chat() {
       toast.error(error.message || "Something went wrong. Please try again.");
     },
   });
+
+  // Mirror the latest estimate and product matches into the lead, so the
+  // suggested prompts and the proposal form know where the conversation has got
+  // to. The figures themselves stay owned by the server; this is a UI cache.
+  useEffect(() => {
+    if (!isClient || !activeConvId) return;
+
+    let latestSizing: SizingResult | undefined;
+    let latestMatches: MatchedPackage[] | undefined;
+    for (const message of messages) {
+      for (const part of message.parts ?? []) {
+        const p = part as { type?: string; data?: unknown };
+        if (p.type === "data-sizing" && p.data) {
+          latestSizing = p.data as SizingResult;
+        } else if (p.type === "data-packages" && p.data) {
+          latestMatches = p.data as MatchedPackage[];
+        }
+      }
+    }
+
+    const signature = [
+      latestSizing
+        ? `${latestSizing.recommendedSystemKw}|${latestSizing.netCostInr}|${latestSizing.monthlyUnits}`
+        : "",
+      latestMatches ? latestMatches.map((m) => m.pkg.id).join(",") : "",
+    ].join("#");
+    if (signature === lastSavedSizingRef.current) return;
+    lastSavedSizingRef.current = signature;
+
+    let next: SolarLead | undefined;
+    if (latestSizing) next = saveSizing(activeConvId, latestSizing);
+    if (latestMatches) {
+      next = saveMatches(
+        activeConvId,
+        latestMatches.map((m) => m.pkg.id)
+      );
+    }
+    if (next) setLead(next);
+  }, [messages, isClient, activeConvId]);
 
   // Initialize: migrate legacy storage, load or create conversation
   useEffect(() => {
@@ -181,15 +234,42 @@ export default function Chat() {
     defaultValues: { message: "" },
   });
 
+  // Single send path for the composer and the suggested-prompt chips, so both
+  // carry the compaction summary identically.
+  const sendPrompt = useCallback(
+    (text: string) => {
+      const s = summaryRef.current;
+      sendMessage({
+        text,
+        body: s
+          ? { compactedSummary: s.summary, summarizedUpTo: s.summarizedUpTo }
+          : undefined,
+      } as any);
+    },
+    [sendMessage]
+  );
+
   function onSubmit(data: z.infer<typeof formSchema>) {
-    // Include stored summary in the request body for stateful compaction
-    const s = summaryRef.current;
-    sendMessage({
-      text: data.message,
-      body: s ? { compactedSummary: s.summary, summarizedUpTo: s.summarizedUpTo } : undefined,
-    } as any);
+    sendPrompt(data.message);
     form.reset();
   }
+
+  // Remember the details the homeowner typed into the proposal form, so the
+  // form comes back prefilled if they ask for another document later.
+  const handleContactSaved = useCallback((contact: Contact) => {
+    setLead(saveContact(activeConvIdRef.current, contact));
+  }, []);
+
+  // A read bill enters the conversation as a compact summary, not as an image:
+  // the picture would re-enter the model's context every turn and would not fit
+  // in localStorage. The typed fields are kept on the lead for the proposal.
+  const handleBillExtracted = useCallback(
+    (bill: BillExtraction) => {
+      setLead(saveBillExtraction(activeConvIdRef.current, bill));
+      sendPrompt(summariseBillForChat(bill));
+    },
+    [sendPrompt]
+  );
 
   function switchConversation(id: string) {
     setActiveConvId(id);
@@ -204,6 +284,9 @@ export default function Chat() {
     setActiveConvId(conv.id);
     setDurations({});
     welcomeMessageShownRef.current = false;
+    clearLead(conv.id);
+    setLead({ stage: "start", updatedAt: 0 });
+    lastSavedSizingRef.current = "";
 
     const welcomeMessage: UIMessage = {
       id: `welcome-${Date.now()}`,
@@ -319,6 +402,7 @@ export default function Chat() {
               >
                 <PanelLeft className="size-4" />
               </Button>
+              <SunnyLockup className="ml-1" />
             </ChatHeaderBlock>
             <ChatHeaderBlock className="justify-center items-center" />
 
@@ -371,15 +455,19 @@ export default function Chat() {
           </ChatHeader>
         </div>
 
-        <div className="h-screen w-full overflow-y-auto px-3 sm:px-5 py-4 pt-[88px] pb-[170px]">
+        <div className="h-screen w-full overflow-y-auto px-3 sm:px-5 py-4 pt-[88px] pb-[200px]">
           <div className="flex min-h-full flex-col items-center justify-end">
             {isClient && (
               <>
+                {/* Only the welcome turn so far: lead with the brand and what
+                    Sunny can actually do, rather than an empty column. */}
+                {messages.length <= 1 && <WelcomeHero />}
                 <MessageWall
                   messages={messages}
                   status={status}
                   durations={durations}
                   conversationId={activeConvId ?? undefined}
+                  onContactSaved={handleContactSaved}
                   onDurationChange={(k, d) =>
                     setDurations((prev) => ({
                       ...prev,
@@ -407,9 +495,27 @@ export default function Chat() {
           </div>
         </div>
 
-        <div className="fixed bottom-0 left-0 right-0 z-50 overflow-visible bg-linear-to-t from-background via-background/60 to-transparent pt-6 pb-3">
-          <div className="relative mx-auto max-w-3xl px-3 sm:px-5">
+        <div className="fixed bottom-0 left-0 right-0 z-50 overflow-visible">
+          <div className="pointer-events-none h-8 bg-linear-to-t from-background to-transparent" />
+          <div className="relative mx-auto max-w-3xl bg-background px-3 pb-3 sm:px-5">
             <div className="message-fade-overlay" />
+
+            {isClient && uploadState.status !== "idle" ? (
+              <BillUploadStatus
+                state={uploadState}
+                onDismiss={() => setUploadState({ status: "idle" })}
+              />
+            ) : (
+              ENABLE_SUGGESTED_PROMPTS &&
+              isClient && (
+                <SuggestedPrompts
+                  stage={lead.stage}
+                  onSelect={sendPrompt}
+                  disabled={status === "streaming" || status === "submitted"}
+                  compact={messages.length > 1}
+                />
+              )
+            )}
 
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <FieldGroup>
@@ -424,10 +530,21 @@ export default function Chat() {
                         {/* Multi-line input: Enter sends, Shift+Enter inserts a
                             newline. Grows with content (field-sizing) up to
                             max-h, then scrolls. */}
+                        {ENABLE_BILL_UPLOAD && (
+                          <BillUploadButton
+                            onExtracted={handleBillExtracted}
+                            onStatusChange={setUploadState}
+                            busy={uploadState.status === "reading"}
+                            disabled={
+                              status === "streaming" || status === "submitted"
+                            }
+                          />
+                        )}
+
                         <Textarea
                           {...field}
                           rows={1}
-                          className="min-h-14 max-h-48 resize-none overflow-y-auto rounded-[20px] bg-card pl-5 pr-14 py-[18px] leading-5"
+                          className={`min-h-14 max-h-48 resize-none overflow-y-auto rounded-[20px] bg-card pr-14 py-[18px] leading-5 ${ENABLE_BILL_UPLOAD ? "pl-12" : "pl-5"}`}
                           placeholder="Type your message here... (Shift+Enter for a new line)"
                           disabled={status === "streaming"}
                           aria-invalid={fieldState.invalid}

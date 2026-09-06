@@ -7,6 +7,10 @@ import { ToolCall, ToolResult } from "./tool-call";
 import { Sources } from "./sources";
 import { rewriteCitationsInParts } from "@/lib/citations";
 import type { UISource } from "@/types/data";
+import { SizingCard } from "@/components/solar/sizing-card";
+import { PackageCards } from "@/components/solar/package-cards";
+import { ProposalCard, type ProposalPart } from "@/components/solar/proposal-card";
+import type { Contact, MatchedPackage, SizingResult } from "@/lib/solar/types";
 import { AssemblingIndicator } from "../ai-elements/assembling-indicator";
 import { ProcessingIndicator } from "../ai-elements/processing-indicator";
 import { ThumbsUp, ThumbsDown } from "lucide-react";
@@ -69,6 +73,7 @@ export function AssistantMessage({
   durations,
   onDurationChange,
   conversationId,
+  onContactSaved,
 }: {
   message: UIMessage;
   status?: string;
@@ -76,6 +81,7 @@ export function AssistantMessage({
   durations?: Record<string, number>;
   onDurationChange?: (key: string, duration: number) => void;
   conversationId?: string;
+  onContactSaved?: (contact: Contact) => void;
 }) {
   const isStreaming = status === "streaming" && isLastMessage;
   const showFeedback = !isStreaming && message.parts.some((p) => p.type === "text");
@@ -86,6 +92,19 @@ export function AssistantMessage({
     | { type: "data-sources"; data: UISource[] }
     | undefined;
   const sources = sourcesPart?.data ?? [];
+
+  // Solar estimate card, rendered from the `data-sizing` stream part. Same
+  // contract as the Sources box: the figures come from the calculator, so the
+  // card cannot drift from what the model wrote.
+  const sizingPart = message.parts.find((p) => p.type === "data-sizing") as
+    | { type: "data-sizing"; data: SizingResult }
+    | undefined;
+  const packagesPart = message.parts.find((p) => p.type === "data-packages") as
+    | { type: "data-packages"; data: MatchedPackage[] }
+    | undefined;
+  const proposalPart = message.parts.find((p) => p.type === "data-proposal") as
+    | { type: "data-proposal"; data: ProposalPart }
+    | undefined;
 
   // Canonicalize citations across ALL text parts with shared numbering state —
   // the same transform the server runs on the joined text to build the Sources
@@ -197,6 +216,11 @@ export function AssistantMessage({
           return null;
         })}
       </div>
+      {sizingPart?.data && <SizingCard result={sizingPart.data} />}
+      {packagesPart?.data && <PackageCards matches={packagesPart.data} />}
+      {proposalPart?.data && (
+        <ProposalCard part={proposalPart.data} onContactSaved={onContactSaved} />
+      )}
       {sources.length > 0 && <Sources sources={sources} />}
       {showFeedback && <FeedbackButtons messageId={message.id} conversationId={conversationId} />}
     </div>
