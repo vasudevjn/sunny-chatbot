@@ -31,7 +31,7 @@ export function ThinkingIndicator({ isCompacting = false }: { isCompacting?: boo
             animate={{ opacity: [0.2, 0.5, 0.2] }}
             transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
           />
-          <Image src="/thinking.png" alt="" width={20} height={20} className="relative" />
+          <Image src="/brand/sunny-thinking.png" alt="" width={20} height={20} className="relative" />
         </motion.div>
       )}
 

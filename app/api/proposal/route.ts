@@ -44,16 +44,18 @@ export async function POST(req: Request) {
     // no hooks, so calling it as a plain function is safe.
     const buffer = await renderToBuffer(ProposalDocument({ model }));
 
-    // The lead, for the installer to follow up. Mirrors the logging style of
-    // app/api/feedback/route.ts — swap for a CRM call when one exists.
+    // The lead, for the installer to follow up. Deliberately REDACTED: this
+    // lands in the hosting provider's runtime logs on a public deployment, so
+    // the name is dropped and the mobile masked. The reference ties the line to
+    // the PDF the homeowner is holding, which is all a follow-up actually needs.
+    // Swap for a CRM call — with proper consent handling — when one exists.
+    const maskedPhone = `${model.contact.phone.slice(0, 2)}xxxxx${model.contact.phone.slice(-3)}`;
     console.log(
       "LEAD:",
       JSON.stringify({
         reference: model.reference,
-        name: model.contact.name,
-        phone: model.contact.phone,
+        phone: maskedPhone,
         city: model.contact.city,
-        email: model.contact.email || null,
         state: model.sizing.state,
         discom: model.sizing.discom,
         monthlyUnits: model.sizing.monthlyUnits,

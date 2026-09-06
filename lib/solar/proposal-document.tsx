@@ -12,6 +12,7 @@ import React from "react";
 import {
   Document,
   Font,
+  Image,
   Page,
   Text,
   View,
@@ -19,18 +20,36 @@ import {
 } from "@react-pdf/renderer";
 import { formatInr, formatInrApprox, formatKw, formatPct, formatYears } from "./format";
 import type { ProposalModel } from "./proposal";
+import { formatRateBand } from "./data/finance";
+import {
+  WAAREE_LOGO_DATA_URI,
+  WAAREE_LOGO_HEIGHT,
+  WAAREE_LOGO_WIDTH,
+} from "./brand-assets";
+
+// Rendered width of the logo on the cover, in PDF points. Height follows the
+// source aspect ratio so the mark is never stretched.
+const LOGO_W = 132;
+const LOGO_H = Math.round((LOGO_W * WAAREE_LOGO_HEIGHT) / WAAREE_LOGO_WIDTH);
 
 // react-pdf hyphenates aggressively by default, producing breaks like
 // "col-lateral" mid-table. Returning the whole word disables it.
 Font.registerHyphenationCallback((word) => [word]);
 
+// Sampled from the Waaree logo artwork. The PDF is the INSTALLER'S document,
+// so it carries the installer's palette — not Sunny's amber, which belongs to
+// the chat interface. An amber rule directly beneath a green logo read as a
+// mismatched template.
 const COLORS = {
   ink: "#1a1a1a",
   muted: "#5c6470",
   line: "#d8dce2",
-  accent: "#b45309",
-  accentSoft: "#fdf6ec",
+  accent: "#2c8a24",      // Waaree green, darkened slightly for text contrast
+  accentSoft: "#eef7ec",  // the same green at a tint, for the headline panel
   panel: "#f6f8fa",
+  // Waaree's red, from the logo strapline. Reserved for the DRAFT mark: in the
+  // brand green that warning read as approval, which is the opposite of its job.
+  warning: "#c02f2e",
 };
 
 const styles = StyleSheet.create({
@@ -128,7 +147,7 @@ const styles = StyleSheet.create({
     right: 44,
     fontSize: 8,
     fontFamily: "Helvetica-Bold",
-    color: COLORS.accent,
+    color: COLORS.warning,
     letterSpacing: 1,
   },
   footer: {
@@ -211,7 +230,10 @@ export function ProposalDocument({ model }: { model: ProposalModel }) {
 
         <View style={styles.brandBar}>
           <View>
-            <Text style={styles.brandName}>{model.installer.name}</Text>
+            <Image
+              src={WAAREE_LOGO_DATA_URI}
+              style={{ width: LOGO_W, height: LOGO_H }}
+            />
             <Text style={styles.brandTagline}>{model.installer.tagline}</Text>
           </View>
           <View>
@@ -417,9 +439,11 @@ export function ProposalDocument({ model }: { model: ProposalModel }) {
         <View wrap={false}>
           <Text style={styles.sectionTitle}>Financing — published terms</Text>
           <Text style={styles.para}>
-            These are published lender terms, shown for information. They are not
-            an offer of credit and not a recommendation. Which option suits you
-            depends on your own circumstances — speak to your bank.
+            These are terms published by the lender, shown for information only.
+            They are not an offer of credit and not a recommendation. Other banks
+            and finance companies offer rooftop solar loans on different terms;
+            what suits you depends on your own circumstances, so compare and
+            speak to your own bank before deciding.
           </Text>
           <View style={styles.tableHead}>
             <Text style={[styles.th, { flex: 3.4 }]}>Lender / product</Text>
@@ -438,7 +462,7 @@ export function ProposalDocument({ model }: { model: ProposalModel }) {
                 {o.product.lender} — {o.product.productName}
               </Text>
               <Text style={[styles.td, { flex: 1.6, textAlign: "right" }]}>
-                {o.product.minRatePct}–{o.product.maxRatePct}%
+                {formatRateBand(o.product)}
               </Text>
               <Text style={[styles.td, { flex: 1.4, textAlign: "right" }]}>
                 {o.tenureYears} yrs
@@ -452,10 +476,10 @@ export function ProposalDocument({ model }: { model: ProposalModel }) {
             </View>
           ))}
           <Text style={[styles.disclaimer, { marginTop: 6 }]}>
-            Monthly figures are illustrations at the midpoint of each published
-            rate range and the full tenure, on the amount that lender would fund.
-            The amounts financed differ, so these repayments are not directly
-            comparable with one another.
+            The monthly figure is an illustration only: the published rate over
+            the full tenure, on the amount this scheme would fund after the
+            lender&apos;s margin. Rates are floating and move with the benchmark,
+            so the actual instalment will differ.
           </Text>
         </View>
       </Page>

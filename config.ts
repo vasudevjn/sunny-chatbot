@@ -144,7 +144,7 @@ export const PINECONE_VISUALS_PER_SOURCE = 20; // max figure/table chunks merged
 // Update this list whenever you ingest new content into Pinecone.
 // The model uses this to decide whether to search the KB or skip it entirely.
 export const KB_SCOPE = `
-The knowledge base holds TWELVE documents, and nothing else.
+The knowledge base holds FOURTEEN documents, and nothing else.
 
 PM SURYA GHAR SUBSIDY AND NATIONAL RULES
 1. MNRE's governing guidelines for Central Financial Assistance to residential consumers — eligibility, the per-kilowatt subsidy slabs and the overall cap, the domestic content requirement (DCR) for modules and cells, the national portal application journey, vendor empanelment, technical feasibility and inspection, and disbursal to the beneficiary's bank account
@@ -156,29 +156,35 @@ MAHARASHTRA NET METERING
 5. MSEDCL's net metering application procedure (Annexure-1) — where to obtain the form, the technical details and documents to submit, the fee, which office receives it, and the steps that follow
 6. MERC's practice direction of 30 June 2026 recognising digital agreements and waiving the requirement for a separate signed net metering agreement in Maharashtra. This is current and simplifies the paperwork — consult it before describing the Maharashtra agreement step
 
+GUJARAT NET METERING
+7. The Gujarat Electricity Regulatory Commission's Net Metering (Fourth Amendment) Regulations 2024, Notification 13 of 2024 — eligibility, capacity limits, metering and billing arrangements, and settlement of exported energy for consumers of the GUVNL companies (MGVCL, UGVCL, DGVCL, PGVCL). IMPORTANT: this is an AMENDMENT. The GERC principal regulations of 2016 that it amends are NOT indexed, so you can say what the 2024 rules provide but you cannot reconstruct the whole Gujarat framework from first principles. If a question turns on a base rule the amendment does not touch, say the position should be confirmed with GERC or the local DISCOM
+
 FINANCING
-7. State Bank of India's published terms for its PM Surya Ghar rooftop solar loan — loan amount limits by system size, interest rate, margin, tenure, moratorium, eligibility, security, documentation and processing charges. SBI is the ONLY lender whose actual published terms are indexed
+8. State Bank of India's published terms for its PM Surya Ghar rooftop solar loan — loan amount limits, interest rate, margin, tenure, moratorium, eligibility, security, documentation and processing charges, for both the up-to-Rs-2-lakh and Rs-2-to-6-lakh tiers
+9. Canara Bank's published terms for its Rooftop Solar (CRTS) loan under the scheme — maximum quantum of Rs 2 lakh including subsidy, a minimum 10% margin, no minimum income requirement, repayment up to ten years, and eligibility covering age, credit score, rooftop rights and the electricity bill. NOTE: this document does NOT state Canara's interest rate. Do not give a rate for Canara; say the rate is not published in what you have and point the homeowner at the bank
+SBI and Canara are the ONLY lenders whose published terms are indexed
 
 ${INSTALLER_NAME_POSSESSIVE} OWN PRODUCT AND WARRANTY DOCUMENTATION
-8. The limited warranty for our solar PV modules — product workmanship period, the linear performance warranty and its year-by-year guaranteed output, what is excluded, conditions that void cover, and the claim procedure
-9. The on-grid inverter warranty — period, scope, exclusions, and the service and claim process
-10. Our customer FAQ on buying rooftop solar — what a kit contains, ordering and delivery, installation, subsidy handling, warranty and after-sales service
-11. The 2 kW on-grid kit built with bifacial DCR-compliant modules — contents, module and inverter specification, expected generation, roof area, warranty
-12. The Radiance Lite 3 kW on-grid kit — contents, specification, expected generation, roof area, mounting and cabling, warranty
+10. The limited warranty for our solar PV modules — product workmanship period, the linear performance warranty and its year-by-year guaranteed output, what is excluded, conditions that void cover, and the claim procedure
+11. The on-grid inverter warranty — period, scope, exclusions, and the service and claim process
+12. Our customer FAQ on buying rooftop solar — what a kit contains, ordering and delivery, installation, subsidy handling, warranty and after-sales service
+13. The 2 kW on-grid kit built with bifacial DCR-compliant modules — contents, module and inverter specification, expected generation, roof area, warranty
+14. The Radiance Lite 3 kW on-grid kit — contents, specification, expected generation, roof area, mounting and cabling, warranty
 
 These are ${INSTALLER_NAME_POSSESSIVE} own documents, so you may speak to them directly rather than attributing them to a third party. Two limits still apply. First, the product names, specifications and prices you put in front of a homeowner come from matchSolarProducts, which knows the current range and pricing — these documents may describe kits that are no longer offered, so never quote a price or recommend a product from them. Second, a warranty is a contractual commitment: state its terms as the document states them, and do not extend, summarise away an exclusion, or promise cover the document does not give.
 
 NOT in the knowledge base. Do not search for these; answer from general knowledge, say plainly that you are not certain, or offer a callback:
-- Anything Gujarat-specific: GERC net metering regulations, the Surya Gujarat state scheme, GEDA process. This is a real gap — be honest about it rather than reaching for the Maharashtra answer
+- The GERC principal regulations of 2016, the Surya Gujarat state scheme, and the GEDA process. Item 7 covers the 2024 amendment ONLY. Gujarat is thinner than Maharashtra here — say so plainly rather than answering a Gujarat question from the Maharashtra documents
 - The MERC 2019 regulations themselves, and any Maharashtra rule beyond items 5 and 6
 - The August 2026 amendment to the PM Surya Ghar guidelines. Item 1 is the base document; if a question turns on a very recent change, say the position may have been updated
-- Loan terms for any lender other than SBI
+- Loan terms for any lender other than SBI and Canara. Bank of Baroda, Union Bank, Bank of Maharashtra, PNB and every NBFC are NOT indexed — do not state their rates or terms
+- Canara's interest rate specifically. Item 9 gives Canara's quantum, margin, tenure and eligibility but no rate
 - ALMM enlisted model tables, installation standards, quality-control manuals and electrical safety rules
 - ${INSTALLER_NAME_POSSESSIVE} company profile, case studies, installation service contracts or annual maintenance terms
 
 NEVER search for a number used in an estimate. Electricity tariffs, slab rates, system prices, and the rupee subsidy applied to a quote all come from the sizing and catalogue tools, never from a document. The subsidy documents explain how the scheme works; the tools decide what this homeowner gets.
 
-Search the knowledge base for: how the subsidy scheme and its application process work, DCR and ALMM, how rooftop solar works generally, the Maharashtra net metering application and agreement, SBI's published loan terms, and our own warranty, kit contents or after-sales questions.
+Search the knowledge base for: how the subsidy scheme and its application process work, DCR and ALMM, how rooftop solar works generally, the Maharashtra net metering application and agreement, what the 2024 Gujarat net metering amendment provides, SBI's and Canara's published loan terms, and our own warranty, kit contents or after-sales questions.
 `.trim();
 
 // --- Exa Web Search ---

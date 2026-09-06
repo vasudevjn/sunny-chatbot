@@ -114,6 +114,9 @@ export function buildProposalModel(input: ProposalInput): ProposalModel {
   const netForFinance = selected?.netPriceInr ?? sizing.netCostInr;
 
   const nextSteps = [
+    // The contact promise leads, because it is the only step the homeowner has
+    // to do nothing to trigger. Everything below it follows from this call.
+    `A ${INSTALLER_NAME} representative will contact you on the mobile number you gave us, to answer questions and arrange the site survey. Quote reference ${reference(input.contact, createdAt)} when you speak to them.`,
     `A ${INSTALLER_NAME} engineer visits to survey the roof, check shading and inspect your meter and wiring.`,
     "We confirm the final system design and issue a firm quotation.",
     `We register your application on the ${SUBSIDY_SCHEME_NAME} national portal and apply to ${sizing.discom} for net metering.`,
