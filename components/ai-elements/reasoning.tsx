@@ -165,7 +165,7 @@ export const ReasoningTrigger = memo(
               <BrainIcon className="size-4" />
             ) : (
               <Image
-                src="/thinking.png"
+                src="/brand/sunny-thinking.png"
                 alt=""
                 width={16}
                 height={16}

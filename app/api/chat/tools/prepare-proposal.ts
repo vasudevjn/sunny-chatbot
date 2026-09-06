@@ -61,16 +61,20 @@ export function createPrepareProposal(collectArtifact: CollectArtifact) {
       if (missing.length > 0) {
         return (
           `PROPOSAL NOT READY. Still needed: ${missing.join(", ")}.\n\n` +
-          `Ask for these naturally, in one short message — not as a form. Explain that ${INSTALLER_NAME} needs them to follow up. ` +
+          `Ask for these naturally, in one short message — not as a form. Say plainly that the details are used ONLY so a ${INSTALLER_NAME} representative can contact them about this proposal. ` +
           `A form has been shown to the homeowner where they can type their details directly, so you can simply invite them to fill it in or tell you. ` +
           `Do NOT invent any of these details.`
         );
       }
 
       return (
-        `PROPOSAL READY. A download button has been shown to the homeowner. ` +
-        `Tell them their draft proposal is ready to download, and say briefly what it contains: the system, the costs and subsidy, the savings over time, financing options and the steps that follow. ` +
-        `Remind them once that it is a draft, not a binding quotation, and that a site survey confirms the final design.`
+        `PROPOSAL READY. A download button has been shown to the homeowner.
+
+` +
+        `Tell them, briefly and in this order: their draft proposal is ready to download; ` +
+        `a ${INSTALLER_NAME} representative will contact them on the mobile number they gave, to answer questions and arrange the site survey; ` +
+        `and it is a draft, not a binding quotation. ` +
+        `Keep the whole reply under the usual length limit — do not list the document's contents section by section.`
       );
     },
   });

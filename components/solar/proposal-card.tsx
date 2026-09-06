@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { contactSchema } from "@/lib/solar/types";
+import { INSTALLER_NAME } from "@/config";
 import type { Contact, ProposalInput, SizingInput } from "@/lib/solar/types";
 
 export interface ProposalPart {
@@ -41,6 +42,7 @@ export function ProposalCard({
   const [email, setEmail] = useState(stored.email ?? "");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [downloading, setDownloading] = useState(false);
+  const [downloaded, setDownloaded] = useState(false);
 
   const hasSizing = Boolean(part.payload.sizing);
 
@@ -95,6 +97,7 @@ export function ProposalCard({
       URL.revokeObjectURL(url);
 
       onContactSaved?.(parsed.data);
+      setDownloaded(true);
       toast.success("Your draft proposal has been downloaded.");
     } catch (error) {
       toast.error(
@@ -115,7 +118,7 @@ export function ProposalCard({
           <div className="font-semibold">Your draft proposal</div>
           <p className="mt-0.5 text-xs text-muted-foreground">
             {hasSizing
-              ? "Add your details and we'll put the document together. They're used only so we can follow up."
+              ? "Add your details and we'll put the document together. They are used only so a representative can contact you about this proposal."
               : "An estimate is needed before a proposal can be prepared."}
           </p>
         </div>
@@ -206,12 +209,25 @@ export function ProposalCard({
           )}
           {downloading ? "Preparing…" : "Download draft proposal"}
         </Button>
+
+        {downloaded && (
+          <p className="text-xs text-brand">
+            Downloaded. A {INSTALLER_NAME} representative will contact you on the
+            number you gave, to answer questions and arrange a site survey.
+          </p>
+        )}
       </div>
 
-      <div className="border-t bg-muted/40 px-4 py-2 text-[11px] text-muted-foreground">
-        A draft, not a binding quotation. Your details go to the installer so an
-        advisor can follow up. Never share Aadhaar, PAN, bank or card details in
-        this chat.
+      <div className="space-y-1 border-t bg-muted/40 px-4 py-2 text-[11px] text-muted-foreground">
+        <p>
+          Your name, mobile number and city are used <strong>only</strong> so a{" "}
+          {INSTALLER_NAME} representative can contact you about this proposal.
+          They are not used for marketing and not shared with anyone else.
+        </p>
+        <p>
+          This is a draft, not a binding quotation. Never share Aadhaar, PAN,
+          bank or card details in this chat.
+        </p>
       </div>
     </div>
   );
