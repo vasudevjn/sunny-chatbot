@@ -69,5 +69,7 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: "/api/chat",
+  // Every route that costs a model call or renders a document. A literal
+  // string here would cover only the first, leaving the new routes unlimited.
+  matcher: ["/api/chat", "/api/extract", "/api/proposal"],
 };

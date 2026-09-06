@@ -1,12 +1,8 @@
 import { z } from "zod";
 
-export const uploadedDocumentSchema = z.object({
-    id: z.string(),
-    title: z.string(),
-    created_at: z.string(),
-    content: z.string(),
-});
-export type UploadedDocument = z.infer<typeof uploadedDocumentSchema>;
+// Bill-upload schemas live in lib/solar/types.ts, alongside the domain logic
+// that consumes them. (The template's unused uploadedDocumentSchema was removed
+// here when the upload path was built.)
 
 export const chunkSchema = z.object({
     pre_context: z.string(),

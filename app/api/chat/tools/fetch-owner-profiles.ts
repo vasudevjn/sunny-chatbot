@@ -1,6 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
 import {
+  INSTALLER_NAME_POSSESSIVE,
   OWNER_NAME,
   OWNER_PROFILE_SOURCES,
   OWNER_PROFILE_MAX_CHARACTERS,
@@ -27,7 +28,7 @@ export function createFetchOwnerProfiles(
 ) {
   return tool({
     description:
-      `Fetch the LIVE content of ${OWNER_NAME}'s official profile pages ` +
+      `Fetch the LIVE content of ${INSTALLER_NAME_POSSESSIVE} official profile pages ` +
       `(${OWNER_PROFILE_SOURCES.map((s) => s.name).join(", ")}). ` +
       `Use this FIRST for questions about his recent activity, current role, or latest publications. ` +
       `If a profile comes back unavailable or lacks the needed detail, follow up with a broad webSearch ` +
