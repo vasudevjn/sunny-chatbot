@@ -144,25 +144,41 @@ export const PINECONE_VISUALS_PER_SOURCE = 20; // max figure/table chunks merged
 // Update this list whenever you ingest new content into Pinecone.
 // The model uses this to decide whether to search the KB or skip it entirely.
 export const KB_SCOPE = `
-The knowledge base currently holds FIVE documents, and nothing else:
+The knowledge base holds TWELVE documents, and nothing else.
 
-1. MNRE's guidelines for Central Financial Assistance to residential consumers under PM Surya Ghar Muft Bijli Yojana — eligibility, the subsidy slabs and cap, the domestic content requirement (DCR) for modules, the national portal application journey, vendor empanelment, inspection, and disbursal to the beneficiary's bank account
+PM SURYA GHAR SUBSIDY AND NATIONAL RULES
+1. MNRE's governing guidelines for Central Financial Assistance to residential consumers — eligibility, the per-kilowatt subsidy slabs and the overall cap, the domestic content requirement (DCR) for modules and cells, the national portal application journey, vendor empanelment, technical feasibility and inspection, and disbursal to the beneficiary's bank account
 2. A one-page MNRE summary of the same subsidy structure, with an indicative table of system size against average monthly consumption
-3. MNRE's homeowner FAQ on grid-connected rooftop solar — how such a system works, what happens to surplus generation, roof and shading needs, typical generation, maintenance, and the DISCOM's role
-4. MSEDCL's net metering application procedure for Maharashtra — where to get the form, the technical details and documents to submit, the fee, and which office receives it
-5. ${INSTALLER_NAME}'s own customer FAQ — what a kit contains, ordering and delivery, installation, subsidy handling, warranty and after-sales service
+3. MNRE's homeowner FAQ on grid-connected rooftop solar — how such a system works, what happens to surplus generation, roof and shading needs, typical generation per kilowatt, maintenance, and the DISCOM's role
+4. MNRE's ALMM overview — what the Approved List of Models and Manufacturers is, List-I (cells) versus List-II (modules), how enlistment works, and how ALMM relates to the DCR requirement. The enlisted model tables themselves are NOT indexed, so you cannot check whether a specific model number is listed
 
-NOT in the knowledge base. Do not search for these; answer from your own knowledge, say you are not certain, or offer a callback:
-- Gujarat-specific net metering rules and GERC regulations
-- The MERC regulations and any Maharashtra rule beyond the application procedure above
-- Bank loan terms, interest rates and financing schemes
-- Panel and inverter datasheets, and detailed warranty documents
-- ALMM model lists, installation standards and electrical safety rules
-- ${INSTALLER_NAME} company profile, case studies, or service contract terms
+MAHARASHTRA NET METERING
+5. MSEDCL's net metering application procedure (Annexure-1) — where to obtain the form, the technical details and documents to submit, the fee, which office receives it, and the steps that follow
+6. MERC's practice direction of 30 June 2026 recognising digital agreements and waiving the requirement for a separate signed net metering agreement in Maharashtra. This is current and simplifies the paperwork — consult it before describing the Maharashtra agreement step
 
-NEVER search for a number used in an estimate. Electricity tariffs, slab rates, system prices and rupee subsidy amounts come from the sizing and catalogue tools, never from a document.
+FINANCING
+7. State Bank of India's published terms for its PM Surya Ghar rooftop solar loan — loan amount limits by system size, interest rate, margin, tenure, moratorium, eligibility, security, documentation and processing charges. SBI is the ONLY lender whose actual published terms are indexed
 
-Search the knowledge base only for the subsidy scheme and its process, how rooftop solar works, the Maharashtra net metering application, or ${INSTALLER_NAME} customer-service questions.
+${INSTALLER_NAME_POSSESSIVE} OWN PRODUCT AND WARRANTY DOCUMENTATION
+8. The limited warranty for our solar PV modules — product workmanship period, the linear performance warranty and its year-by-year guaranteed output, what is excluded, conditions that void cover, and the claim procedure
+9. The on-grid inverter warranty — period, scope, exclusions, and the service and claim process
+10. Our customer FAQ on buying rooftop solar — what a kit contains, ordering and delivery, installation, subsidy handling, warranty and after-sales service
+11. The 2 kW on-grid kit built with bifacial DCR-compliant modules — contents, module and inverter specification, expected generation, roof area, warranty
+12. The Radiance Lite 3 kW on-grid kit — contents, specification, expected generation, roof area, mounting and cabling, warranty
+
+These are ${INSTALLER_NAME_POSSESSIVE} own documents, so you may speak to them directly rather than attributing them to a third party. Two limits still apply. First, the product names, specifications and prices you put in front of a homeowner come from matchSolarProducts, which knows the current range and pricing — these documents may describe kits that are no longer offered, so never quote a price or recommend a product from them. Second, a warranty is a contractual commitment: state its terms as the document states them, and do not extend, summarise away an exclusion, or promise cover the document does not give.
+
+NOT in the knowledge base. Do not search for these; answer from general knowledge, say plainly that you are not certain, or offer a callback:
+- Anything Gujarat-specific: GERC net metering regulations, the Surya Gujarat state scheme, GEDA process. This is a real gap — be honest about it rather than reaching for the Maharashtra answer
+- The MERC 2019 regulations themselves, and any Maharashtra rule beyond items 5 and 6
+- The August 2026 amendment to the PM Surya Ghar guidelines. Item 1 is the base document; if a question turns on a very recent change, say the position may have been updated
+- Loan terms for any lender other than SBI
+- ALMM enlisted model tables, installation standards, quality-control manuals and electrical safety rules
+- ${INSTALLER_NAME_POSSESSIVE} company profile, case studies, installation service contracts or annual maintenance terms
+
+NEVER search for a number used in an estimate. Electricity tariffs, slab rates, system prices, and the rupee subsidy applied to a quote all come from the sizing and catalogue tools, never from a document. The subsidy documents explain how the scheme works; the tools decide what this homeowner gets.
+
+Search the knowledge base for: how the subsidy scheme and its application process work, DCR and ALMM, how rooftop solar works generally, the Maharashtra net metering application and agreement, SBI's published loan terms, and our own warranty, kit contents or after-sales questions.
 `.trim();
 
 // --- Exa Web Search ---
@@ -290,10 +306,22 @@ export type ReasoningDisplayMode = "full" | "truncated" | "hidden";
 export const REASONING_DISPLAY_MODE: ReasoningDisplayMode = "truncated";
 export const REASONING_TRUNCATE_WORDS = 15; // words to show in "truncated" mode
 
-// --- Backend toggles (enabled by default) ---
-// Disable web search by setting the env var: ENABLE_WEB_SEARCH=false
+// --- Backend toggles ---
+// Web search is OFF by default, and must be opted into with ENABLE_WEB_SEARCH=true.
+//
+// This inverts the template's default deliberately. Sunny answers as the
+// installer, so an open web tool will happily source a loan rate from a blog or
+// a warranty term from the wrong product family and state it under the company's
+// name — both observed in testing. Money and contract are exactly where being
+// wrong is most expensive. Web results are also untrusted text entering the
+// model's context, which the uploaded-bill path already guards against and this
+// one would not.
+//
+// With it off, out-of-scope questions degrade honestly: Sunny names the gap and
+// points at the national portal, the DISCOM or the lender. Turn it on only for a
+// demo, or once there is a reason the knowledge base cannot cover.
 export const ENABLE_WEB_SEARCH =
-  process.env.ENABLE_WEB_SEARCH?.toLowerCase() !== "false";
+  process.env.ENABLE_WEB_SEARCH?.toLowerCase() === "true";
 
 // Disable the Pinecone knowledge base by setting the env var: ENABLE_VECTOR_SEARCH=false
 // When off: the KB tool is removed from the model, no Pinecone connection is made,
